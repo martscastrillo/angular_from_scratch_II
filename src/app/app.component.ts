@@ -7,4 +7,9 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'angular_from_scratch_II';
+  imgParent= "valor inicial del padre";
+  img = "";
+  onLoaded(img: string) {
+    console.log('log padre', img);
+  }
 }
