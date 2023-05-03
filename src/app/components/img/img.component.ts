@@ -43,20 +43,20 @@ export class ImgComponent
   ngOnInit(): void {
     //before render
     //  async - fetch -- once time
-    console.log('ngOnInit', 'imgValue =>', this.img);
+ /*    console.log('ngOnInit', 'imgValue =>', this.img);
     this.counterFn = window.setInterval(() => {
       this.counter += 1;
       console.log('run counter');
-    }, 1000);
+    }, 1000); */
   }
   ngAfterViewInit(): void {
     //after render
     //handler children
-    console.log('ngAfterViewInit');
+  /*   console.log('ngAfterViewInit'); */
   }
   ngOnDestroy() {
     //delete component
-    console.log('ngOnDestroy');
+   /*  console.log('ngOnDestroy'); */
     window.clearInterval(this.counterFn);
   }
 
@@ -65,7 +65,7 @@ export class ImgComponent
   }
 
   imgLoaded() {
-    console.log('log hijo');
+   /*  console.log('log hijo'); */
     this.loaded.emit(this.img);
   }
 }
