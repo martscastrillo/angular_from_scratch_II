@@ -1,43 +1,30 @@
 import { Component, OnInit } from '@angular/core';
-import {Product} from '../../models/product.model';
-import { StoreService} from '../../services/store.service'
+import { Product } from '../../models/product.model';
+import { StoreService } from '../../services/store.service';
+import { ProductsService } from '../../services/products.service';
 
 @Component({
   selector: 'app-products',
   templateUrl: './products.component.html',
-  styleUrls: ['./products.component.scss']
+  styleUrls: ['./products.component.scss'],
 })
-export class ProductsComponent implements OnInit{
+export class ProductsComponent implements OnInit {
   myShoppingCart: Product[] = [];
   total = 0;
-  products: Product[] = [
-    {
-       id: '1',
-       name: 'Product 1',
-       image: './../../../assets/two-wooden-toys-against-a-blue-background-with-royalty-free-image-1654524375.jpeg',
-       price: 100 
-     },
-     {
-       id: '2',
-       name: 'Product 2',
-       image: './../../../assets/two-wooden-toys-against-a-blue-background-with-royalty-free-image-1654524375.jpeg',
-       price: 50 
-     },
-     {
-       id: '3',
-       name: 'Product 3',
-       image: './../../../assets/two-wooden-toys-against-a-blue-background-with-royalty-free-image-1654524375.jpeg',
-       price: 100 
-     }
-   ];
-   constructor(private storeService: StoreService){
-    this.myShoppingCart= this.storeService.getShoppingCart();
-   }
-   ngOnInit(): void{
- 
-   }
-   onAddToShoppingCart(product: Product){
-    this.storeService.addProduct(product)
+  products: Product[] = [];
+  constructor(
+    private storeService: StoreService,
+    private productsService: ProductsService
+  ) {
+    this.myShoppingCart = this.storeService.getShoppingCart();
+  }
+  ngOnInit(): void {
+    this.productsService.getAllProducts().subscribe(data => {
+      this.products = data;
+    });
+  }
+  onAddToShoppingCart(product: Product) {
+    this.storeService.addProduct(product);
     this.total = this.storeService.getTotal();
-   }
-};
+  }
+}
