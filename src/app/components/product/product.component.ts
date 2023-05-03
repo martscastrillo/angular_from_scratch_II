@@ -17,7 +17,7 @@ export class ProductComponent implements OnInit {
     category: 'string'
   }
   @Output() addedProduct = new EventEmitter<Product>();
-  constructor(){}
+
   ngOnInit(): void{
 
   }

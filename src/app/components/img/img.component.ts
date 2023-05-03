@@ -18,7 +18,7 @@ import {
 export class ImgComponent
   implements OnInit, OnChanges, AfterViewInit, OnDestroy
 {
-  imge: string = '';
+  imge  : string = '';
   @Input('imge')
   set changeImg(newImg: string) {
     this.imge = newImg;
