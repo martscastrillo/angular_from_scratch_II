@@ -7,9 +7,9 @@ import { Component, OnInit, Input, Output, EventEmitter } from '@angular/core';
 })
 export class ImgComponent implements OnInit {
 
-  @Input() img: string = '';
+  @Input() img: string = 'valor inicial';
   @Output() loaded = new EventEmitter<string>();
-  imageDefault = './assets/images/default.png';
+  imageDefault = './../../../assets/default.png';
 
   constructor() { }
 
