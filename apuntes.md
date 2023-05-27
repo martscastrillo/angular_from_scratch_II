@@ -1,3 +1,4 @@
+# Curso de Angular: Componentes y Servicios
 ## ¿Qué son los componentes?
 Un componente es una pieza de software con una responsabilidad única y una estructura y funcionalidad determinada, además de ser reutilizable.
 
@@ -64,3 +65,67 @@ Los decoradores alteran el comportamiento de una clase en Angular, para que el c
 Este decorador es quién enlaza el componente con el archivo HTML y la hoja de estilos, además le otorga al componente un selector o un nombre para utilizarlo en tus templates.
 
 Contribución creada con los aportes de Kevin Fiorentino.
+## Uso de Inputs
+
+Para comunicar componentes, Angular hace uso de decoradores para intercambiar información entre un componente padre hacia un componente hijo y viceversa.
+
+### Comunicando componentes
+
+Para enviar información de padre a hijo, puedes utilizar el decorador @Input() para marcar una propiedad de una clase como punto de entrada de un dato.
+
+```html 
+<p style=‘text-align:center;’>
+<img src=“https://static.platzi.com/media/articlases/Images/Screenshot from 2022-04-05 22-42-58.png” alt=“Envio de datos componente padre a hijo”>
+</p>
+```
+```javascript 
+import { Component, Input } from '@angular/core';
+
+@Component({
+  selector: 'app-test-name',
+  templateUrl: './test-name.component.html',
+  styleUrls: ['./test-name.component.less']
+})
+export class TestNameComponent {
+
+  @Input() firstname: string;
+
+  constructor() { }
+}
+```
+Debes importar Input desde @angular/core para poder utilizar esta directiva e indicar que la propiedad firstname es un dato que el componente padre enviará.
+
+Podrás inicializar el componente desde su padre y pasarle los inputs que este necesite de la siguiente manera:
+```javascript
+<app-test-name>
+    firstname="Platzi"
+</app-test-name>
+```
+También puedes cambiar el nombre el Input especificando el nombre de la propiedad que quieras que este utilice al inicializar el componente.
+```javascript
+...
+    @Input('my-name') firstname: string;
+...
+```
+```javascript
+<app-test-name>
+    my-name="Platzi"
+</app-test-name>
+```
+
+### Data binding en Inputs
+
+El decorador @Input() detectará cualquier cambio en el dato y automáticamente actualizará su valor. Si ocurre algún evento en el componente padre que cambie el valor en el Input firstname, el componente hijo recibirá inmediatamente ese nuevo valor.
+
+### Input Set
+
+Otra manera de utilizar la directiva @Input es de la siguiente manera:
+
+```javascript
+  @Input() set saludar(firstname: string) {
+        console.log('Hola', firstname)
+    };
+```
+Observa que en esta oportunidad, cada vez que se envía un valor al @Input, se ejecutará la función saludar() que recibe como parámetro el valor que se le haya enviado.
+
+De esta manera, puedes ejecutar la lógica que necesites dentro de esta función cada vez que el valor del @Inputcambia.
