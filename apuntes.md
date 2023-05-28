@@ -196,7 +196,592 @@ export class FatherComponent {
 
 ```
 La función recibirMensaje() posee un parámetro del tipo Event que contendrá el mensaje del componente hijo.
+
 ## Componente para producto
+Existen muchas situaciones en donde deberás enviar información de un componente padre a su/s hijo/s, por eso, acá te mostraremos con un ejemplo cómo funciona el componente para producto.
+
+### Comunicando componente padre a hijo
+
+Un ejemplo real para el uso de la comunicación entre componente podría ser para renderizar N cantidad de productos de un catálogo.
+
+Paso 1: Comienza creando una interfaz para tipear el modelo de datos del Producto:
+
+```javascript
+// interfaces/producto.interface.ts
+export interface Producto {
+    id: number;
+    name: string;
+    precio: number;
+    image: string;
+}
+```
+Paso 2: Luego, impórtala en el componente Catálogo que será el componente padre en la comunicación.
+```javascript
+ // components/catalogo/catalogo.component.ts
+import { Component } from '@angular/core';
+import { Producto } from './producto.interface.ts';
+
+@Component({
+  selector: 'app-catalogo',
+  templateUrl: './catalogo.component.html',
+  styleUrls: ['./catalogo.component.scss']
+})
+export class CatalogoComponent {
+
+  public productos: Producto[] = [
+    {
+        id: 1,
+        name: 'Automobil de juguete',
+        precio: 100,
+        image: './image1.jpg'
+    },
+    {
+        id: 2,
+        name: 'Muñeca de trapo',
+        precio: 180,
+        image: './image2.jpg'
+    },
+    {
+        id: 3,
+        name: 'Pelota de futbol',
+        precio: 120,
+        image: './image3.jpg'
+    }
+  ];
+}
+```
+
+Paso 3: Este componente posee un array de productos para iterar en el HTML inicializando el componente <app-producto> por cada objeto en el array.
+
+```javascript
+ <!-- components/catalogo/catalogo.component.html -->
+<app-producto *ngFor="let p of productos"
+    [producto]="p"
+></app-producto>
+```
+Paso 4: Finalmente, el componente hijo recibe el producto haciendo uso del decorador @Input() y apoyándose también de la interfaz para tipear los datos.
+```javascript
+ // components/producto/producto.component.ts
+import { Component, Input } from '@angular/core';
+import { Producto } from './producto.interface.ts';
+
+@Component({
+  selector: 'app-producto',
+  templateUrl: './producto.component.html',
+  styleUrls: ['./producto.component.scss']
+})
+export class ProductoComponent {
+
+  @Input() producto: Producto;
+}
+```
+
+
+Pudiendo mostrar la información del producto en el template del componente hijo:
+
+```javascript
+ <!-- components/producto/producto.component.html -->
+<div>
+    <h2>{{ producto.name }}</h2>
+    <img [src]="producto.image">
+    <p>Precio: {{ producto.precio }}</p>
+</div>
+```
+Será habitual tener la necesidad en tus proyectos de construir componentes más grandes o “contenedores” de muchos otros componentes repetitivos y más pequeños. Es importante buscar este desacople entre componentes de la mejor manera posible.
+
+## Ciclo de vida de componentes
+Un componente pasa por varias etapas en su ciclo de vida. A través de hooks, puedes realizar una determinada acción cuando el componente es inicializado, cuando se dispara un evento, cuando se detecta un cambio, cuando el componente es destruido, etc.
+### Hooks más utilizados
+
+#### Constructor
+Como en toda clase en la programación orientada a objetos, el constructor es quien crea la instancia del objeto y sus dependencias.
+
+Solo se ejecuta una vez antes del render del componente.
+No tiene que utilizarse para procesos asincrónicos.
+#### ngOnChanges
+El hook ngOnChanges() se dispara cada vez que se produce un cambio de estado en el componente. Cuando una variable cambia de valor, por ejemplo o ante el cambio de valor de un Input.
+
+Se ejecuta N cantidad de veces antes y durante el render del componente.
+Puede emplearse para procesos asincrónicos.
+#### ngOnInit
+Es el hook más usado, ngOnInit() es ideal para cualquier solicitud de datos asincrónicos a una API para preparar el componente antes de renderizarlo.
+
+Únicamente se ejecuta una vez, antes del render del componente.
+Puede usarse para procesos asincrónicos.
+#### ngAfterViewInit
+Este hook únicamente se ejecuta una vez cuando el render del componente haya finalizado. Puede serte útil para realizar acciones programáticas que requieran que todo el HTML del componente ya este preparado.
+
+Únicamente se ejecuta una vez después del render del componente.
+#### ngOnDestroy
+Finalmente, ngOnDestroy() se ejecutará cuando el componente es destruido, o sea, cuando ya no existe en la interfaz del navegador. Suele utilizarse para liberar espacios de memoria que el componente requiera.
+
+### Usando hook
+
+Los hooks de ciclo de vida de Angular, son interfaces que tienen que importarse desde @angular/core para implementarlos en la clase y así detectar los cambios en cada evento.
+
+```javascript
+ import { Component, OnInit, AfterContentInit, OnDestroy } from '@angular/core';
+
+@Component({
+  selector: 'app-test-name',
+  templateUrl: './test-name.component.html',
+  styleUrls: ['./test-name.component.less']
+})
+export class TestNameComponent implements OnInit, AfterContentInit, OnDestroy {
+
+  constructor() {
+    console.log('1. Primero sucederá esto');
+  }
+
+  ngOnInit(): void {
+    console.log('2. Luego esto');
+  }
+  
+  ngAfterViewInit(): void {
+    console.log('3. Seguido de esto');
+  }
+  
+  ngOnDestroy(): void {
+    console.log('4. Finalmente esto (cuando el componente sea destruido)');
+  }
+  
+}
+```
+
+Cada hook tiene sus características y utilidades recomendadas dependiendo lo que necesitas ayer. Es importante seguir estas recomendaciones para buscar optimizar el rendimiento de tu aplicación.
+## ngDestroy and SetInput
+El hook ngOnDestroy() & SetInput tiene una importancia clave para el cuidado de nuestra aplicación. Su funcionalidad más importante es la liberación de espacio en memoria de variables para que no se acumule. Si esto llegara a suceder en tu aplicación, la misma podría volverse lenta y tosca a medida que toda la memoria del navegador es ocupada.
+### Liberando espacio de memoria
+Todo el ecosistema Angular está basado en observables para el manejo asincrónico.
+
+Cada vez que utilices un subscribe() para escuchar la respuesta de algún evento asincrónico (por ejemplo, el llamado a una API), es relevante realizar el respectivo unsubscribe() para liberar ese espacio en memoria.
+#### RxJS
+RxJS (Reactive Extensions Library for JavaScript) es una popular librería de Javascript para el manejo de observables. Si trabajas con Angular esta librería será tu mejor amiga.
+
+Observa el siguiente ejemplo donde primero se importa Subscription desde rxjs para tipar la variable suscription. Guardamos el observable para posteriormente darlo de baja. También importamos interval que devuelve el observable y genera un contador que emite una pulsación, en este ejemplo, cada 1000 milisegundos.
+
+```javascript
+ import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Subscription, interval } from 'rxjs';
+
+@Component({
+  selector: 'app-test-name',
+  templateUrl: './test-name.component.html',
+  styleUrls: ['./test-name.component.less']
+})
+export class TestNameComponent implements OnDestroy, OnInit {
+
+    count = interval(1000);
+    suscription!: Subscription;
+
+    ngOnInit(): void {
+        this.suscription = this.count.subscribe(d => {
+          console.log("contando:", d);
+        })
+    }
+
+    ngOnDestroy(): void {
+        this.suscription.unsubscribe();
+    }
+
+}
+```
+Si nuestro código acabara aquí, cuando el componente es destruido, el contador continuaría ocupando memoria que ya no debería ser utilizada.
+
+Para solucionar esto, guardamos en this.suscription el observable del contador y en ngOnDestroy() y llamamos al método .unsubscribe() para detener el contador.
+
+## Lista de productos
+
+Haciendo uso de los decoradores de Angular para comunicar componentes. Puedes crear una lista de productos y con unas pocas líneas de CSS crear un layout para visualizar los productos de una forma más agradable.
+
+### Comunicando con múltiples componentes hijos
+
+Haciendo uso de un ngFor, puedes crear y comunicarte con N cantidad de componentes hijos. Veamos un ejemplo:
+
+Paso 1: Crea una interfaz para tipear el modelo de datos del Producto.
+```javascript
+ // interfaces/producto.interface.ts
+export interface Producto {
+    id: number;
+    name: string;
+    precio: number;
+    image: string;
+}
+```
+Paso 2: Impórtala en el componente catálogo que será el componente padre en la comunicación.
+
+```javascript
+// components/catalogo/catalogo.component.ts
+import { Component } from '@angular/core';
+import { Producto } from './producto.interface.ts';
+
+@Component({
+  selector: 'app-catalogo',
+  templateUrl: './catalogo.component.html',
+  styleUrls: ['./catalogo.component.scss']
+})
+export class CatalogoComponent {
+
+  public productos: Producto[] = [
+    {
+      id: 1,
+      name: 'Automobil de juguete',
+      precio: 100,
+      image: 'https://static3.depositphotos.com/1000865/118/i/600/depositphotos_1183767-stock-photo-toy-car.jpg'
+    },
+    {
+      id: 2,
+      name: 'Muñeca de trapo',
+      precio: 180,
+      image: 'https://kinuma.com/8869-home_default/muneca-de-trapo-mali.jpg'
+    },
+    {
+      id: 3,
+      name: 'Pelota de futbol',
+      precio: 120,
+      image: 'https://media.istockphoto.com/photos/soccer-ball-isolated-3d-rendering-picture-id1257575611?k=20&m=1257575611&s=612x612&w=0&h=g530fFJspT42xFGY7HycLvpBKLXpJ2XAkKCRyY-SK80='
+    },
+    {
+      id: 4,
+      name: 'Castillo',
+      precio: 220,
+      image: 'https://i.imgur.com/44nzvkQ.jpg'
+    }
+  ];
+
+  constructor() { }
+} 
+```
+
+Paso 3: l componente catálogo posee un array de productos para iterar en el HTML inicializando el componente <app-producto> por cada objeto en el array.
+```javascript
+ <!-- components/catalogo/catalogo.component.html -->
+<h1>Catálogo Platzi</h1>
+<div class="catalogo">
+    <app-producto *ngFor="let p of productos"
+        [producto]="p"
+    ></app-producto>
+</div>
+```
+Paso 4: El componente hijo recibe el producto haciendo uso del decorador @Input() y apoyándose también de la interfaz para tipear los datos.
+```javascript
+ // components/producto/producto.component.ts
+import { Component, Input } from '@angular/core';
+import { Producto } from './producto.interface.ts';
+
+@Component({
+  selector: 'app-producto',
+  templateUrl: './producto.component.html',
+  styleUrls: ['./producto.component.scss']
+})
+export class ProductoComponent {
+
+  @Input() producto: Producto;
+
+  constructor() { }
+}
+```
+Pudiendo mostrar la información del producto en el template del componente hijo:
+```html
+<!-- components/producto/producto.component.html -->
+<div>
+    <h2>{{ producto.name }}</h2>
+    <img [src]= "producto.image" >
+    <p>Precio: {{ producto.precio }}</p>
+</div> 
+```
+Paso 5: En este punto, los productos quedarán uno debajo del otro. Con un poco de Flex Box en la hoja de estilos del catálogo, puedes presentar los productos uno al lado del otro:
+
+```css
+ .catalogo {
+  display: flex;
+  justify-content: space-around;
+  align-items: flex-end;
+}
+```
+## Componentes y Header
+### Componente “header”
+
+Anímate a crear una barra de navegación sencilla. Para generar un componente, recuerda utilizar el comando ng g c  del CLI de Angular.
+
+Paso 1: Escribe el código HTML de tu template 
+```html
+ <header class="header">
+    <a href="#" class="logo">CompanyLogoa>
+    <div class="header-right">
+        <a href="#">Homea>
+        <a class="active" href="#">Catalogoa>
+        <a href="#">Abouta>
+    div>
+header>
+```
+Paso 2: Agrega el CSS correspondiente en la hoja de estilos del componente.
+```scss
+ /* components/nav-bar/nav-bar.component.scss */
+.header {
+  overflow: hidden;
+  background-color: #f1f1f1;
+  padding: 20px 10px;
+  a {
+    float: left;
+    color: black;
+    text-align: center;
+    padding: 12px;
+    text-decoration: none;
+    font-size: 18px;
+    border-radius: 4px;
+    &.logo {
+      font-size: 25px;
+      font-weight: bold;
+    }
+  }
+  a:hover {
+    background-color: #ddd;
+    color: black;
+  }
+  a.active {
+    background-color: dodgerblue;
+    color: white;
+  }
+  .header-right {
+    float: right;
+  }
+}
+
+/* Header Mobile */
+@media screen and (max-width: 512px) {
+  .header {
+    a {
+      float: none;
+      display: block;
+      text-align: left;
+    }
+    .header-right {
+      float: none;
+    }
+  }
+}
+```
+Paso 3: Para tener tu header responsive, has uso de Media Queries para lograr que la aplicación se adapte a cualquier tamaño de pantalla.
+Siempre tienes que desarrollar tus aplicaciones front-end de manera tal que se vea correctamente en cualquier dispositivo. Apóyate de las herramientas que los navegadores poseen para validar tu aplicación.
+
+## Implementando el sideMenu
+### Menú mobile
+
+Utilizando el estado de los componentes de Angular, podrás mostrar un menú lateral solo en dispositivos pequeños.
+
+Paso 1: Comienza dividiendo tu <header> adaptándolo con CSS para mostrar u ocultar elementos dependiendo el tamaño del dispositivo:
+```html
+ <!-- components/nav-bar/nav-bar.component.html -->
+<header class="header">
+    <div class="d-flex-mobile">
+        <a href="#" class="logo">CompanyLogo</a>
+        <div class="show-side-menu">
+            <app-side-bar></app-side-bar>
+        </div>
+    </div>
+    <div class="header-right hidde-menu">
+        <a href="#">Home</a>
+        <a class="active" href="#">Catalogo</a>
+        <a href="#">About</a>
+    </div>
+</header>
+```
+```scss
+ /* components/nav-bar/nav-bar.component.scss */
+.header {
+  /* ... */
+  .show-side-menu {
+    display: none;
+  }
+}
+
+/* Header Mobile */
+@media screen and (max-width: 512px) {
+  /* ... */
+  .d-flex-mobile {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .show-side-menu {
+    display: block;
+  }
+  .hidde-menu {
+    display: none;
+  }
+}
+```
+Paso 2: Crea el componente que será la barra de navegación lateral:
+
+```javascript
+ // components/side-bar/side-bar.component.ts
+@Component({
+  selector: 'app-side-bar',
+  templateUrl: './side-bar.component.html',
+  styleUrls: ['./side-bar.component.scss']
+})
+export class SideBarComponent {
+
+  public showMenu = false;
+
+  toggleSideBar(): void {
+    this.showMenu = !this.showMenu;
+  }
+
+}
+```
+
+```html
+ <!-- components/side-bar/side-bar.component.html -->
+<div id="main">
+    <button class="openbtn" (click)="toggleSideBar()">☰</button>
+</div>
+<div id="mySidebar" class="sidebar" [ngClass]="this.showMenu ? 'showMenu' : '">
+    <a href="javascript:void(0)" class="closebtn" (click)="toggleSideBar()">×</a>
+    <a href="#">Home</a>
+    <a class="active" href="#">Catalogo</a>
+    <a href="#">About</a>
+</div>
+```
+```scss
+ /* components/side-bar/side-bar.component.scss */
+.sidebar {
+  height: 100%;
+  width: 0;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: #f1f1f1;
+  overflow-x: hidden;
+  transition: 0.5s;
+  padding-top: 60px;
+  box-shadow: 0 3px 6px #00000029;
+
+  a {
+    padding: 8px 8px 8px 32px;
+    text-decoration: none;
+    font-size: 22px;
+    color: black;
+    display: block;
+    transition: 0.3s;
+  }
+  .active, a:hover {
+    color: #98ca3f;
+  }
+  .closebtn {
+    position: absolute;
+    top: 0;
+    right: 25px;
+    font-size: 36px;
+    margin-left: 50px;
+  }
+}
+.openbtn {
+  cursor: pointer;
+  font-size: 20px;
+  color: black;
+  background-color: #f1f1f1;
+  padding: 10px 15px 15px 15px;
+  border: none;
+}
+#main {
+  transition: margin-left .5s;
+  padding: 12px;
+}
+@media screen and (max-height: 450px) {
+  .sidebar {padding-top: 15px;}
+  .sidebar a {font-size: 18px;}
+}
+.showMenu {
+  width: 250px;
+}
+```
+## Comunicación padre e hijo
+
+Establece una comunicación entre un componente padre con uno hijo para saber qué productos quiere agregar el usuario a su carrito de compras y poder visualizar el total a pagar.
+
+### Comunicación componente hijo a padre
+
+Paso 1: Agrégale al componente hijo un @Output() para emitir un mensaje al componente padre cuando el usuario agrega un producto al carrito.
+
+El método addToShoppingCart() emitirá el evento cuando el usuario haga clic en el botón.
+```javascript
+ // components/producto/producto.component.ts
+@Component({
+  selector: 'app-producto',
+  templateUrl: './producto.component.html',
+  styleUrls: ['./producto.component.scss']
+})
+export class ProductoComponent {
+
+  @Input() producto!: Producto;
+  @Output() addProduct = new EventEmitter<Producto>();
+
+  addToShoppingCart(p: Producto): void {
+    this.addProduct.emit(p);
+  }
+}
+```
+```html
+ <!-- components/producto/producto.component.html -->
+<div>
+    <h2>{{ producto.name }}</h2>
+    <img [src]="producto.image" width="200px" height="200px">
+    <p>Precio: {{ producto.precio }}</p>
+    <button (click)="addToShoppingCart(producto)">Agregar al carrito</button>
+</div>
+```
+Paso 2: En el componente padre crea un método para recibir el mensaje, agregarlo al carrito de compras y calcular el monto total a pagar.
+```javascript
+ // catalogo/catalogo/catalogo.component.ts
+@Component({
+  selector: 'app-catalogo',
+  templateUrl: './catalogo.component.html',
+  styleUrls: ['./catalogo.component.scss']
+})
+export class CatalogoComponent {
+
+  public shoppingCart: Producto[] = [];
+  public total = 0;
+
+  public productos: Producto[] = [
+    /* ... */
+  ];
+
+  addProductToCart(p: Producto): void {
+    this.shoppingCart.push(p);
+    this.total += p.precio;
+  }
+}
+```
+Paso 3: El método addProductToCart() recibe el producto, lo guarda en el array shoppingCart y calcula el total a pagar por el usuario. Puedes imprimir estos valores fácilmente con una interpolación.
+
+```html
+ <!-- catalogo/catalogo/catalogo.component.ts -->
+<div *ngIf="productos" class="catalogo">
+  <app-producto *ngFor="let p of productos"
+    [producto]="p"
+    (addProduct)="addProductToCart($event)"
+  ></app-producto>
+</div>
+<div>
+    <h3>Cantidad: {{ shoppingCart.length }}</h3>
+    <h3>Total a pagar: {{ total }}</h3>
+</div>
+```
+
+La comunicación de componente es escencial en cualquier aplicación front-end. Es importante saber manipular el envio de información ya sea de forma descendente o ascendente en la jerarquía de componentes.
+## Conociendo los servicios
+
+
+
+
+
+
+
+
 
 
 
