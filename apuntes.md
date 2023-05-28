@@ -774,11 +774,121 @@ Paso 3: El método addProductToCart() recibe el producto, lo guarda en el array 
 
 La comunicación de componente es escencial en cualquier aplicación front-end. Es importante saber manipular el envio de información ya sea de forma descendente o ascendente en la jerarquía de componentes.
 ## Conociendo los servicios
+Un servicio es la forma que utiliza Angular para modular una aplicación y crear código reutilizable, este tendrá una determinada lógica de negocio que puede ser usada por varios componentes u otros servicios.
+### Tu primer servicio
+
+Con el CLI de Angular, crea un servicio fácilmente con el comando ng generate service test-name o en su manera corta ng g s test-name. Dicho comando creará dos archivos:
+
+- test-name.service.ts
+- test-name.service.spec.ts
+Siendo el archivo .ts el servicio en sí y el archivo .spec.ts el que podrás usar para escribir pruebas unitarias para testear el servicio.
+
+El servicio tendrá por defecto el siguiente código:
+```javascript
+ import { Injectable } from '@angular/core';
+@Injectable({
+  providedIn: 'root'
+})
+export class TestNameService {
+  constructor() { }
+}
+```
+
+Haz visto anteriormente los decoradores en Angular. Así como los componentes usan el decorador @Component(), los servicios utilizan @Injectable().
+
+### Utilizando un servicio
+
+Paso 1: Agrégale al servicio algo de lógica, por ejemplo, una variable con un determinado valor para ser leído a través de un método:
+```javascript
+ import { Injectable } from '@angular/core';
+@Injectable({
+  providedIn: 'root'
+})
+export class TestNameService {
+  private testName = 'Hola Platzi';
+
+  constructor() { }
+  
+  getTestName(): string {
+    return this.testName;
+  }
+}
+```
+Paso 2: Luego, importa en un componente el servicio de la siguiente manera:
 
 
+```javascript
+ // components/catalogo/catalogo.component.ts
+import { TestNameService } from 'src/app/services/test-name.service';
 
+@Component({
+  selector: 'app-catalogo',
+  templateUrl: './catalogo.component.html',
+  styleUrls: ['./catalogo.component.scss']
+})
+export class CatalogoComponent implements OnInit {
 
+  // ...
+  
+  constructor(
+    private testNameService: TestNameService,
+  ) { }
+  
+  ngOnInit(): void {
+    const name = this.testNameService.getTestName();
+    console.log(name);
+  }
+}
+```
 
+En el constructor del componente, se inyecta el servicio para poder ser utilizado posteriormente.
+
+En este ejemplo, estamos llamando en el ngOnInit() el método getTestName() del servicio para obtener el valor de una variable e imprimirla por consola.
+
+De esta manera, puedes tener tu lógica de negocio en un servicio e importar este en N componentes, o incluso en otros servicios y acceder a sus métodos y propiedades.
+## ¿Qué es la inyección de dependencias?
+
+Es muy sencillo crear un servicio en Angular, inyectarlo en un componente y utilizar su lógica. Pero siempre es recomendable entender **¿qué es la inyección de dependencias?, cómo se está haciendo y qué sucede detrás en tu aplicación.
+
+### Patrones de diseño
+
+Angular usa varios patrones de diseño para permitir que esto funcione.
+
+#### Inyección de dependencias
+Imagínate que tienes el siguiente panorama:
+Un Servicio A que emplea el Servicio B y este a su vez utiliza el Servicio C.
+
+Si tuvieses que instanciar el Servicio A, primero deberías:
+instanciar el C para poder continuar con el B y luego sí hacerlo con el A. Se vuelve confuso y poco escalable si en algún momento también tienes que instanciar el Servicio D o E.
+
+La inyección de dependencias soluciona las dependencias de una clase por nosotros.
+
+Cuando instanciamos en el constructor el servicio A, Angular por detrás genera automáticamente la instancia del servicio B y C sin que nosotros nos tengamos que preocupar por estos.
+
+Cuando creaste tu primer servicio con el CLI de Angular:
+
+```javascript
+ // services/test-name.service.ts
+import { Injectable } from '@angular/core';
+@Injectable({
+  providedIn: 'root'
+})
+export class TestNameService {
+  constructor() { }
+}
+```
+Este le proporcionó a la clase el decorador @Injectable({ ... }) con el valor providedIn: 'root' que determina el scope del servicio, o sea, determina que el mismo estará disponible en toda el módulo de tu aplicación por default.
+#### Singleton
+
+La inyección de dependencias no es el único patrón de diseño que Angular usa con sus servicios. También hace uso del patrón Singleton para crear una instancia única de cada servicio.
+
+Si tienes un servicio que se utiliza en N cantidad de componentes (u otros servicios), todos estarán utilizando la misma instancia del servicio y compartiendo el valor de sus variables y todo su estado.
+
+### Precauciones utilizando servicios
+
+Ya has visto hasta aquí que un servicio puede ser importado en muchos componentes u otros servicios a la vez. Puedes inyectar la cantidad de servicio que quieras en un componente, siempre de una forma controlada y coherente.
+
+## Obteniendo datos de una API
 
 
 
