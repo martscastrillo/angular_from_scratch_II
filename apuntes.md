@@ -1054,6 +1054,282 @@ Los pipes se utilizan fácilmente en el HTML haciendo uso del carácter “|” 
 ```
 En los ejemplos anteriores, se mostrará en la vista el testo HOLA SOY PLATZI completamente en mayúscula y el número 1000 en formato $1,000.00. En algunos casos, los pipes reciben parámetros de configuración, como el caso del pipe currency que recibe :'USD' para indicar el tipo de divisa.
 
+## Construyendo tu propio pipe
+
+Para poder afirmar que estás construyendo tu propio Pipe, es necesario hacer uso del CLI de Angular con el comando ng generate pipe test-name o en su forma corta con ng g p test-name.
+
+### Mi primer “pipe” en Angular
+
+De la misma manera que lo hace con los servicios y componentes, el CLI creará un archivo .ts que contiene el código del pipe y un archivo .spec.ts para sus respectivas pruebas unitarias.
+
+```javascript
+ // pipes/test-name.pipe.ts
+import { Pipe, PipeTransform } from '@angular/core';
+
+@Pipe({
+  name: 'testName'
+})
+export class TestNamePipe implements PipeTransform {
+  transform(value: unknown, ...args: unknown[]): unknown {
+    return null;
+  }
+}
+```
+El pipe ya trae algo de código y configuraciones por defecto. Tendrás que cambiar los unknown por el tipeado que necesites dependiendo el pipe que estés generando.
+
+Es importante observar el decorador @Pipe() que contiene el nombre del pipe, para así poder llamarlo en tu HTML.
+Y no olvides importar el pipe en el módulo de tu aplicación para que este pueda ser utilizado.
+```javascript
+ // app.module.ts
+import { TestNamePipe } from './pipes/test-name.pipe';
+@NgModule({
+  declarations: [
+    // ...
+    TestNamePipe,
+  ],
+  imports: [
+    // ...
+  ],
+  providers: [],
+  bootstrap: [ /* ... */ ]
+})
+export class AppModule { }
+```
+### Currency pipe personalizado
+
+Vamos a crear tu propio currency pipe. Para esto harás uso del objeto global de Javascript Intl. Si no conocías este objeto, puedes leer más al respecto de su Especificación de ECMAScript.
+
+El global Jacascript Intl, proporciona una API de internacionalización para el formateo de monedas y fechas, entre otras funcionalidades más.
+
+Veamos un ejemplo de cómo utilizarlo:
+
+```javascript
+ // pipes/custom-currency.pipe.ts
+import { Pipe, PipeTransform } from '@angular/core';
+@Pipe({
+  name: 'customCurrency'
+})
+export class CustomCurrencyPipe implements PipeTransform {
+
+  transform(value: number, ...args: string[]): string {
+    const divisa = args[0];
+
+    if (divisa == 'USD')
+      return new Intl.NumberFormat('en-us', { style: 'currency', currency: 'USD' }).format(value);
+    else
+      return new Intl.NumberFormat('es-ar', { style: 'currency', currency: 'ARS' }).format(value);
+  }
+
+}
+```
+El pipe recibe un parámetro del tipo numbery usando el segundo parámetro args puedes capturar las variables que necesites pasarle. En este ejemplo, lo empleamos para configurar el tipo de divisa.
+Verificamos qué divisa se está pasando por parámetro. Si es USD, empleando el objeto Intl damos formato a la moneda para que sea $1,000.00 mientras que con cualquier otra divisa sea $1.000,00. Nota la pequeña diferencias de intercambiar el punto y la coma para formatear el número y los decimales.
+
+Finalmente, utiliza tu nuevo pipe en el HTML de la siguiente manera:
+
+```html
+ <div>
+    {{ 1000 | customCurrency:'USD' }}
+</div>
+```
+Los pipes utilizan un concepto llamado Memoization para ahora en tiempo de ejecución guardando el resultado de las funciones en memoria.
+Emplea tus propios pipes siempre que sea posible para optimizar tu aplicación.
+## Conociendo las directivas
+
+Angular utiliza el concepto de directiva para cambiar la apariencia o el comportamiento de un elemento en el HTML. Acá estaremos conociendo las directivas.
+
+### Tu primera directiva
+
+Para crear tu primera directiva, es necesario usar el CLI de Angular con el comando ng generate directive test-name o en su forma corta ng g d test-name.
+
+Al igual que con los servicios y los pipelines, el comando CLI creará un archivo .ts con el código de tu directiva y un archivo .spec.ts para sus respectivas pruebas unitarias.
+
+El CLI también actualizará el archivo app.module.ts importando la directiva en las declarations[]. No olvides de asegurarte que se esté importando correctamente. De lo contrario, Angular no reconocerá la directiva.
+
+Las directivas por defecto tienen el siguiente aspecto:
+```javascript
+ import { Directive } from '@angular/core';
+
+@Directive({
+  selector: '[appTestName]'
+})
+export class TestNameDirective {
+  constructor() { }
+}
+```
+Utilizan el decorador @Directive() que contiene el nombre que utilizarás en el HTML para utilizar la directiva.
+
+### Manipulando estilos
+
+En las directivas, puedes capturar el elemento HTML importando el servicio ElementRef y de esta manera poder cambiar los estilos de dicho elemento:
+```javascript
+ // directives/change-color.directive.ts
+import { Directive, ElementRef } from '@angular/core';
+
+@Directive({
+  selector: '[appChangeColor]'
+})
+export class ChangeColorDirective {
+  constructor(
+    private element: ElementRef
+  ) {
+    this.element.nativeElement.style.color = 'blue';
+  }
+}
+```
+```html
+ <div>
+    <p appChangeColor>Texto color azul.</p>
+</div>
+```
+
+### Escuchando eventos
+
+Otra posibilidad que ofrecen las directivas, es la escucha de eventos. Haciendo uso del decorador @HostListener() e importado desde @angular/core puedes ejecutar una función cada vez que se produce un clic, hover, scroll o cualquier otro evento.
+```javascript
+ // directives/change-color.directive.ts
+import { Directive, ElementRef, HostListener } from '@angular/core';
+
+@Directive({
+  selector: '[appChangeColor]'
+})
+export class ChangeColorDirective {
+
+  @HostListener('mouseenter') onMouseEnter() {
+    this.element.nativeElement.style.color = 'blue';
+  }
+  @HostListener('mouseleave') onMouseLeave() {
+    this.element.nativeElement.style.color = '';
+  }
+
+  constructor(
+    private element: ElementRef
+  ) { }
+}
+```
+```html
+ <div>
+    <p appChangeColor>Texto color azul al hacer hover.</p>
+</div>
+```
+### Pasando datos a una directiva
+
+Finalmente, si tienes la necesidad de que tu directiva reciba algún tipo de valor, lo mejor es apoyarte en el decorador que ya conoces @Input().
+```javascript
+ // directives/change-color.directive.ts
+import { Directive, Input, ElementRef } from '@angular/core';
+
+@Directive({
+  selector: '[appChangeColor]'
+})
+export class ChangeColorDirective {
+
+  @Input() color!: string;
+
+  constructor(
+    private element: ElementRef
+  ) {
+    this.element.nativeElement.style.color = this.color;
+  }
+}
+```
+```html
+ <div>
+    <p appChangeColor [color]="'blue'">Texto color azul.</p>
+</div>
+<div>
+    <p appChangeColor [color]="'red'">Texto color rojo.</p>
+</div>
+<div>
+    <p appChangeColor [color]="'green'">Texto color verde.</p>
+</div>
+```
+Puede ser algo difícil si recién estás comenzando con Angular imaginar un buen uso para una directiva propia. De momento, es importante saber que existen para poder implementarlas cuando llegue ese momento.
+
+
+## Reactividad básica
+
+El concepto de reactividad básica es muy importante en el desarrollo front-end. Se trata del estado de la aplicación con respecto al valor de los datos en cada componente, cómo estos cambian a medida que el usuario interactúa y cómo se actualiza la interfaz.
+
+### Problemas en la comunicación de componentes
+
+Cuando pensamos en cómo comunicar un componente padre con su hijo y viceversa, solemos utilizar los decoradores @Input() y @Output().
+
+Pero muchas veces, en aplicaciones grandes, la comunicación de componentes se vuelve mucho más compleja y estas herramientas no alcanzan cuando se necesita enviar información de un componente “hijo” a uno “abuelo”.
+
+### Solución a la comunicación de componentes
+
+Es recomendable implementar un patrón de diseño para mantener el estado de la aplicación centralizado en un único punto, para que todos los componentes accedan a ellos siempre que necesiten. A este punto central se lo conoce como Store.
+### Implementando un store de datos
+
+Los store de datos suelen implementarse haciendo uso de Observables.
+
+Paso 1:
+Importa la clase BehaviorSubject desde la librería RxJS, que te ayudará a crear una propiedad observable, a la cual tu componente pueda suscribirse y reaccionar ante ese cambio de estado.
+```javascript
+ // services/store.service.ts
+import { BehaviorSubject } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class StoreService {
+
+  private myShoppingCart: Producto[] = [];
+  private myCart = new BehaviorSubject<Producto[]>([]);
+  public myCart$ = this.myCart.asObservable();
+
+  constructor() { }
+
+  addProducto(producto: Producto): void {
+    // El observable emitirá un nuevo valor con cada producto que se agregue al carrito.
+    this.myShoppingCart.push(producto);
+    this.myCart.next(this.myShoppingCart);
+  }
+
+}
+```
+Paso 2: Suscribe a cualquier componente que necesites a estos datos, para reaccionar cuando estos cambian.
+```javascript
+ // components/nav-bar/nav-bar.component.ts
+import { StoreService } from 'src/app/services/store.service';
+import { Subscription } from 'rxjs';
+
+@Component({
+  selector: 'app-nav-bar',
+  templateUrl: './nav-bar.component.html',
+  styleUrls: ['./nav-bar.component.scss']
+})
+export class NavBarComponent implements OnInit, OnDestroy {
+
+  private sub$!: Subscription;
+
+  constructor(
+    private storeService: StoreService
+  ) { }
+
+  ngOnInit(): void {
+    this.storeService.myCart$
+      .subscribe(data => {
+        // Cada vez que el observable emita un valor, se ejecutará este código
+        console.log(data);
+      });
+  }
+  
+  ngOnDestroy(): void {
+    this.sub$.unsubscribe();
+  }
+
+}
+```
+El lugar más apropiado para esto es en ngOnInit(). No olvides guardar este observable en una propiedad del tipo Subscription para hacer un unsubscribe() cuando el componente sea destruido.
+
+
+
+
+
+
+
 
 
 
