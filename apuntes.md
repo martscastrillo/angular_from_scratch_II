@@ -1024,6 +1024,39 @@ Con Observable puedes tipear la respuesta de tus métodos de la siguiente manera
 
 De esta forma, sin tener una API real, puedes simular la interacción de tu componente con datos provenientes de una proceso asincrónico.
 
+## Conociendo los pipes
+
+Si vamos a estar conociendo los pipes debemos empezar por definirlos, un Pipe es una función pura, o sea, una función que dado un determinado valor siempre devolverá el mismo resultado.
+
+Los Pipes no modifican el valor de un dato, simplemente le cambian el aspecto visual, Angular utiliza el concepto de Pipes para la transformación de datos.
+
+### Tipos de pipes
+
+Angular posee por defecto algunos pipes que puedes utilizar para transformar números, fechas o cadenas de texto. Veamos los más importantes:
+
+- DatePipe: Modifica fechas de acuerdo al formato necesitado.
+- UpperCasePipe: Convierte todo el texto a mayúscula.
+- LowerCasePipe: Convierte todo el texto en minúscula.
+- CurrencyPipe: Convierte un número a la moneda o divisa necesitada.
+Podrás encontrar en la documentación oficial de Angular más Pipes y su funcionamiento.
+
+### Utilizando pipes
+
+Los pipes se utilizan fácilmente en el HTML haciendo uso del carácter “|” seguido del nombre del pipe.
+
+```html
+ <div>
+  {{ "hola soy platzi" | uppercase }}
+</div>
+<div>
+  {{ 1000 | currency:'USD' }}
+</div>
+```
+En los ejemplos anteriores, se mostrará en la vista el testo HOLA SOY PLATZI completamente en mayúscula y el número 1000 en formato $1,000.00. En algunos casos, los pipes reciben parámetros de configuración, como el caso del pipe currency que recibe :'USD' para indicar el tipo de divisa.
+
+
+
+
 
 ```javascript
  
