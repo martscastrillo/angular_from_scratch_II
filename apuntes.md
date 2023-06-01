@@ -1345,16 +1345,3 @@ Que el código fuente cumpla con un determinado estándar de codificación es mu
 Es conveniente planificar a futuro la escalabilidad de una aplicación, ya que los estilos de codificación, influyen en la calidad de cualquier software a largo plazo.
 
 El desafío para las y los profesionales del software, está en escribir un código fuente sólido y en adaptarse a las reglas de codificación de cualquier proyecto del que hagas parte.
-
-
-
-
-
-
-
-
-
-
-```javascript
- 
-```
